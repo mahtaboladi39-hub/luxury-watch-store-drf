@@ -1,4 +1,5 @@
 from django.db.models import F
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 
@@ -14,14 +15,15 @@ class ProductListView(ListAPIView):
 class ProductDetailView(RetrieveAPIView):
     serializer_class = ProductDetailSerializer
     lookup_field = 'slug'
+    queryset = Product.objects.select_related('brand', 'category').prefetch_related(
+        'images', 'colors', 'comments__customer__user'
+    )
 
     def get_object(self):
-        Product.objects.filter(slug=self.kwargs['slug']).update(
+        # Atomic increment in a single UPDATE; annotate() cannot persist values.
+        updated = Product.objects.filter(slug=self.kwargs['slug']).update(
             click_count=F('click_count') + 1
         )
-        return get_object_or_404(
-            Product.objects.select_related('brand', 'category').prefetch_related(
-                'images', 'colors', 'comments__customer__user'
-            ),
-            slug=self.kwargs['slug'],
-        )
+        if not updated:
+            raise Http404
+        return get_object_or_404(self.get_queryset(), slug=self.kwargs['slug'])
