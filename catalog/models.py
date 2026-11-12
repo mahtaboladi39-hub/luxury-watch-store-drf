@@ -1,11 +1,11 @@
-﻿from django.db import models
+from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils.text import slugify
 
 User = get_user_model()
 
 
-class TimeStampedModel(models.Model):
+class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -13,7 +13,27 @@ class TimeStampedModel(models.Model):
         abstract = True
 
 
-class Brand(TimeStampedModel):
+class SluggedMixinModel(models.Model):
+    """Abstract mixin that fills `slug` from `slug_source_field`."""
+
+    slug_source_field = 'title'
+    slug = models.SlugField(max_length=200, unique=True, blank=True)
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base = slugify(getattr(self, self.slug_source_field)) or 'item'
+            candidate, n = base, 2
+            while type(self).objects.filter(slug=candidate).exclude(pk=self.pk).exists():
+                candidate = f'{base}-{n}'
+                n += 1
+            self.slug = candidate
+        super().save(*args, **kwargs)
+
+
+class Brand(BaseModel):
     name = models.CharField(max_length=120, unique=True)
     meta_title = models.CharField(max_length=160, blank=True)
     meta_description = models.TextField(blank=True)
@@ -22,7 +42,7 @@ class Brand(TimeStampedModel):
         return self.name
 
 
-class Category(TimeStampedModel):
+class Category(BaseModel, SluggedMixinModel):
     title = models.CharField(max_length=120, unique=True)
     slug = models.SlugField(max_length=140, unique=True, blank=True)
 
@@ -30,16 +50,11 @@ class Category(TimeStampedModel):
     def name(self):
         return self.title
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.title)
-        super().save(*args, **kwargs)
-
     def __str__(self):
         return self.title
 
 
-class Customer(TimeStampedModel):
+class Customer(BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='customer_profile')
     phone_number = models.CharField(max_length=32, blank=True)
 
@@ -47,7 +62,7 @@ class Customer(TimeStampedModel):
         return self.user.get_username()
 
 
-class Product(TimeStampedModel):
+class Product(BaseModel, SluggedMixinModel):
     class Gender(models.TextChoices):
         MEN = 'men', 'Men'
         WOMEN = 'women', 'Women'
@@ -101,39 +116,28 @@ class Product(TimeStampedModel):
         ordering = ['-created_at']
         indexes = [models.Index(fields=['is_available', 'is_special', 'is_luxury'])]
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            base = slugify(self.title)
-            candidate = base
-            n = 2
-            while Product.objects.filter(slug=candidate).exclude(pk=self.pk).exists():
-                candidate = f'{base}-{n}'
-                n += 1
-            self.slug = candidate
-        super().save(*args, **kwargs)
-
     def __str__(self):
         return self.title
 
 
-class ProductImage(TimeStampedModel):
+class ProductImage(BaseModel):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
     image = models.URLField()
 
 
-class ProductColor(TimeStampedModel):
+class ProductColor(BaseModel):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='colors')
     color = models.CharField(max_length=60)
     hex_code = models.CharField(max_length=7)
 
 
-class Comment(TimeStampedModel):
+class Comment(BaseModel):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='comments')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='comments')
     body = models.TextField()
 
 
-class WishList(TimeStampedModel):
+class WishList(BaseModel):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='wishlist_items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='wishlisted_by')
 
