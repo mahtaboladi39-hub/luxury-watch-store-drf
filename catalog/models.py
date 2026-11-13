@@ -1,8 +1,43 @@
+from django.contrib.auth.models import User
 from django.db import models
-from django.contrib.auth import get_user_model
 from django.utils.text import slugify
 
-User = get_user_model()
+GENDER_CHOICES = [
+    ('men', 'Men'),
+    ('women', 'Women'),
+    ('unisex', 'Unisex'),
+]
+
+ORIGIN_CHOICES = [
+    ('swiss', 'Swiss'),
+    ('japanese', 'Japanese'),
+    ('other', 'Other'),
+]
+
+STRAP_MATERIAL_CHOICES = [
+    ('leather', 'Leather'),
+    ('steel', 'Steel'),
+    ('rubber', 'Rubber'),
+    ('other', 'Other'),
+]
+
+USAGE_CHOICES = [
+    ('daily', 'Daily'),
+    ('formal', 'Formal'),
+    ('sport', 'Sport'),
+]
+
+DESIGN_CHOICES = [
+    ('classic', 'Classic'),
+    ('modern', 'Modern'),
+    ('sport', 'Sport'),
+]
+
+ENGINE_CHOICES = [
+    ('automatic', 'Automatic'),
+    ('quartz', 'Quartz'),
+    ('mechanical', 'Mechanical'),
+]
 
 
 class BaseModel(models.Model):
@@ -55,7 +90,7 @@ class Category(BaseModel, SluggedMixinModel):
 
 
 class Customer(BaseModel):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='customer_profile')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='customer')
     phone_number = models.CharField(max_length=32, blank=True)
 
     def __str__(self):
@@ -63,32 +98,6 @@ class Customer(BaseModel):
 
 
 class Product(BaseModel, SluggedMixinModel):
-    class Gender(models.TextChoices):
-        MEN = 'men', 'Men'
-        WOMEN = 'women', 'Women'
-        UNISEX = 'unisex', 'Unisex'
-    class Origin(models.TextChoices):
-        SWISS = 'swiss', 'Swiss'
-        JAPANESE = 'japanese', 'Japanese'
-        OTHER = 'other', 'Other'
-    class StrapMaterial(models.TextChoices):
-        LEATHER = 'leather', 'Leather'
-        STEEL = 'steel', 'Steel'
-        RUBBER = 'rubber', 'Rubber'
-        OTHER = 'other', 'Other'
-    class Usage(models.TextChoices):
-        DAILY = 'daily', 'Daily'
-        FORMAL = 'formal', 'Formal'
-        SPORT = 'sport', 'Sport'
-    class Design(models.TextChoices):
-        CLASSIC = 'classic', 'Classic'
-        MODERN = 'modern', 'Modern'
-        SPORT = 'sport', 'Sport'
-    class Engine(models.TextChoices):
-        AUTOMATIC = 'automatic', 'Automatic'
-        QUARTZ = 'quartz', 'Quartz'
-        MECHANICAL = 'mechanical', 'Mechanical'
-
     title = models.CharField(max_length=180)
     slug = models.SlugField(max_length=200, unique=True, blank=True)
     brand = models.ForeignKey(Brand, on_delete=models.PROTECT, related_name='products')
@@ -97,12 +106,12 @@ class Product(BaseModel, SluggedMixinModel):
     is_discount = models.BooleanField(default=False)
     is_available = models.BooleanField(default=True)
     is_special = models.BooleanField(default=False)
-    gender = models.CharField(max_length=12, choices=Gender.choices, default=Gender.UNISEX)
-    origin = models.CharField(max_length=20, choices=Origin.choices, default=Origin.OTHER)
-    strap_material = models.CharField(max_length=20, choices=StrapMaterial.choices, default=StrapMaterial.OTHER)
-    usage = models.CharField(max_length=20, choices=Usage.choices, default=Usage.DAILY)
-    design = models.CharField(max_length=20, choices=Design.choices, default=Design.CLASSIC)
-    engine = models.CharField(max_length=20, choices=Engine.choices, default=Engine.QUARTZ)
+    gender = models.CharField(max_length=12, choices=GENDER_CHOICES, default='unisex')
+    origin = models.CharField(max_length=20, choices=ORIGIN_CHOICES, default='other')
+    strap_material = models.CharField(max_length=20, choices=STRAP_MATERIAL_CHOICES, default='other')
+    usage = models.CharField(max_length=20, choices=USAGE_CHOICES, default='daily')
+    design = models.CharField(max_length=20, choices=DESIGN_CHOICES, default='classic')
+    engine = models.CharField(max_length=20, choices=ENGINE_CHOICES, default='quartz')
     main_image = models.URLField(blank=True)
     features = models.JSONField(default=dict, blank=True)
     is_luxury = models.BooleanField(default=False)
@@ -110,11 +119,10 @@ class Product(BaseModel, SluggedMixinModel):
     meta_title = models.CharField(max_length=160, blank=True)
     meta_description = models.TextField(blank=True)
     stash = models.PositiveIntegerField(default=0)
-    click_count = models.PositiveBigIntegerField(default=0)
+    click_count = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ['-created_at']
-        indexes = [models.Index(fields=['is_available', 'is_special', 'is_luxury'])]
 
     def __str__(self):
         return self.title
