@@ -150,6 +150,6 @@ class WishList(BaseModel):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='wishlisted_by')
 
     class Meta:
-        # طبق صورت تمرین: هر محصول فقط یک‌بار در ویش‌لیست هر مشتری ثبت می‌شود.
+        # Per the assignment, a product appears at most once in each customer's wishlist.
         unique_together = [('product', 'customer')]
         ordering = ['-created_at']

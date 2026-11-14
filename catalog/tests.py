@@ -35,7 +35,7 @@ class ProductAPITests(TestCase):
             response = self.client.get('/api/products/')
         self.assertEqual(response.status_code, 200)
         payload = response.json()[0]
-        # خروجی تودرتو طبق صورت تمرین: Brand.name / Category.name
+        # Nested output per the assignment: Brand.name / Category.name
         self.assertEqual(payload['brand'], {'name': 'Rolex'})
         self.assertEqual(payload['category'], {'name': 'Dive Watches'})
         self.assertEqual(

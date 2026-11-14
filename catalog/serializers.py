@@ -30,7 +30,7 @@ class CategoryNameSerializer(serializers.ModelSerializer):
 
 
 class ProductListSerializer(serializers.ModelSerializer):
-    # طبق صورت تمرین: Brand.name و Category.name به‌صورت تودرتو.
+    # Per the assignment: Brand.name and Category.name are nested.
     brand = BrandNameSerializer(read_only=True)
     category = CategoryNameSerializer(read_only=True)
     class Meta:
@@ -48,7 +48,7 @@ class ProductCreateSerializer(serializers.ModelSerializer):
             'main_image', 'features', 'description', 'meta_title', 'meta_description',
             'stash',
         ]
-        # slug از عنوان ساخته می‌شود (SluggedMixinModel)، پس ورودی نیست.
+        # The slug is generated from the title (SluggedMixinModel), so it is not an input.
         read_only_fields = ['id', 'slug']
 
 

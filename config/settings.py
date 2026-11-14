@@ -21,14 +21,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# در محیط واقعی با متغیر محیطی DJANGO_SECRET_KEY جایگزین شود؛ مقدار زیر فقط برای اجرای محلی است.
+# Replace with the DJANGO_SECRET_KEY environment variable in production; this value is for local runs only.
 SECRET_KEY = os.environ.get(
     'DJANGO_SECRET_KEY',
     'django-insecure-stp!x#xiilo%9o^legvj!vli3t&%pb25m95-q_=17zib6pz)9+',
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# پیش‌فرض محلی True است؛ با DJANGO_DEBUG=0 در محیط واقعی خاموش می‌شود.
+# Local default is True; set DJANGO_DEBUG=0 to disable it in production.
 DEBUG = os.environ.get('DJANGO_DEBUG', '1').lower() in ('1', 'true', 'yes', 'on')
 
 ALLOWED_HOSTS = [
