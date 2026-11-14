@@ -113,6 +113,33 @@ class ProductAPITests(TestCase):
             {'username': 'ali', 'email': 'ali@example.com', 'phone_number': '0912'},
         )
 
+    def test_create_product_with_null_features(self):
+        payload = {
+            'title': 'Null Features',
+            'brand': self.brand.pk,
+            'category': self.category.pk,
+            'price': '1000.00',
+            'features': None,
+        }
+        response = self.client.post(
+            '/api/products/create/',
+            data=json.dumps(payload),
+            content_type='application/json',
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()['features'], {})
+
+        # The browsable form sends the literal string "null" instead of JSON null.
+        response = self.client.post('/api/products/create/', data={
+            'title': 'Null Features Form',
+            'brand': self.brand.pk,
+            'category': self.category.pk,
+            'price': '2000.00',
+            'features': 'null',
+        })
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()['features'], {})
+
     def test_create_product_with_uploaded_image(self):
         buffer = BytesIO()
         PILImage.new('RGB', (2, 2), 'red').save(buffer, format='PNG')

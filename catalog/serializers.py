@@ -39,6 +39,9 @@ class ProductListSerializer(serializers.ModelSerializer):
 
 
 class ProductCreateSerializer(serializers.ModelSerializer):
+    # `features` is a JSON object in the model (NOT NULL, default {}), so null is normalised to {}.
+    features = serializers.JSONField(required=False, allow_null=True, default=dict)
+
     class Meta:
         model = Product
         fields = [
@@ -50,6 +53,10 @@ class ProductCreateSerializer(serializers.ModelSerializer):
         ]
         # The slug is generated from the title (SluggedMixinModel), so it is not an input.
         read_only_fields = ['id', 'slug']
+
+    def validate_features(self, value):
+        # The browsable form may send the literal JSON null; store an empty dict instead.
+        return {} if value is None else value
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
