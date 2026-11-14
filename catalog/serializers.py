@@ -1,4 +1,4 @@
-﻿from rest_framework import serializers
+from rest_framework import serializers
 from catalog.models import Brand, Category, Comment, Customer, Product, ProductColor, ProductImage, WishList
 
 
@@ -21,6 +21,20 @@ class ProductListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'title', 'slug', 'price', 'brand', 'category', 'is_available', 'stash']
+
+
+class ProductCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = [
+            'id', 'title', 'slug', 'brand', 'category', 'price',
+            'is_discount', 'is_available', 'is_special', 'is_luxury',
+            'gender', 'origin', 'strap_material', 'usage', 'design', 'engine',
+            'main_image', 'features', 'description', 'meta_title', 'meta_description',
+            'stash',
+        ]
+        # slug از عنوان ساخته می‌شود (SluggedMixinModel)، پس ورودی نیست.
+        read_only_fields = ['id', 'slug']
 
 
 class ProductImageSerializer(serializers.ModelSerializer):

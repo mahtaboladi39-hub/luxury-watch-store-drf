@@ -1,4 +1,4 @@
-﻿# Luxury Watch Store API
+# Luxury Watch Store API
 
 Django REST Framework API for a luxury watch catalog, based on the supplied assignment.
 
@@ -18,9 +18,10 @@ The project uses SQLite by default. `django-debug-toolbar` is enabled automatica
 ## API
 
 - `GET /api/products/` — product list with brand/category using `select_related`.
+- `POST /api/products/create/` — create a product; the slug is generated from the title.
 - `GET /api/products/{slug}/` — product details with images, colors and comments prefetched; increments `click_count` atomically.
 - `GET /api/luxury-special/` — available products marked special and luxury, with the global average price across luxury products annotated in SQL.
 - `GET /api/me/wishlist/` — authenticated user's wishlist with product/customer relationships selected efficiently.
 
-The wishlist endpoint expects a `Customer` profile for the signed-in user. Add products and related content through Django admin.
+The wishlist endpoint expects a `Customer` profile for the signed-in user. Products can be created through the `POST /api/products/create/` endpoint or Django admin.
 

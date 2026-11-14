@@ -1,15 +1,24 @@
 from django.db.models import F
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 
 from catalog.models import Product
-from catalog.serializers import ProductDetailSerializer, ProductListSerializer
+from catalog.serializers import (
+    ProductCreateSerializer,
+    ProductDetailSerializer,
+    ProductListSerializer,
+)
 
 
 class ProductListView(ListAPIView):
     serializer_class = ProductListSerializer
     queryset = Product.objects.select_related('brand', 'category').all()
+
+
+class ProductCreateView(CreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductCreateSerializer
 
 
 class ProductDetailView(RetrieveAPIView):

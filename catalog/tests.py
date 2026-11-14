@@ -1,3 +1,5 @@
+import json
+
 from django.test import TestCase
 
 from catalog.models import Brand, Category, Product
@@ -53,3 +55,20 @@ class ProductAPITests(TestCase):
         self.assertEqual(response.status_code, 404)
         self.product.refresh_from_db()
         self.assertEqual(self.product.click_count, 0)
+
+    def test_create_product(self):
+        payload = {
+            'title': 'Seiko Prospex',
+            'brand': self.brand.pk,
+            'category': self.category.pk,
+            'price': '5000000.00',
+            'stash': 4,
+        }
+        response = self.client.post(
+            '/api/products/create/',
+            data=json.dumps(payload),
+            content_type='application/json',
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()['slug'], 'seiko-prospex')
+        self.assertTrue(Product.objects.filter(slug='seiko-prospex').exists())
