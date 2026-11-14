@@ -1,8 +1,13 @@
 import json
+import os
+import tempfile
+from io import BytesIO
 
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError, transaction
 from django.test import TestCase
+from PIL import Image as PILImage
 
 from catalog.models import Brand, Category, Customer, Product, WishList
 
@@ -107,3 +112,21 @@ class ProductAPITests(TestCase):
             item['customer'],
             {'username': 'ali', 'email': 'ali@example.com', 'phone_number': '0912'},
         )
+
+    def test_create_product_with_uploaded_image(self):
+        buffer = BytesIO()
+        PILImage.new('RGB', (2, 2), 'red').save(buffer, format='PNG')
+        upload = SimpleUploadedFile('watch.png', buffer.getvalue(), content_type='image/png')
+
+        with tempfile.TemporaryDirectory() as media_root, self.settings(MEDIA_ROOT=media_root):
+            response = self.client.post('/api/products/create/', data={
+                'title': 'Seiko Presage',
+                'brand': self.brand.pk,
+                'category': self.category.pk,
+                'price': '7000000.00',
+                'stash': 2,
+                'main_image': upload,
+            })
+            self.assertEqual(response.status_code, 201)
+            self.assertIn('media/products/watch.png', response.json()['main_image'])
+            self.assertTrue(os.path.exists(os.path.join(media_root, 'products', 'watch.png')))

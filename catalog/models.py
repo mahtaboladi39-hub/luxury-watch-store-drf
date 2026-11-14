@@ -112,7 +112,7 @@ class Product(BaseModel, SluggedMixinModel):
     usage = models.CharField(max_length=20, choices=USAGE_CHOICES, default='daily')
     design = models.CharField(max_length=20, choices=DESIGN_CHOICES, default='classic')
     engine = models.CharField(max_length=20, choices=ENGINE_CHOICES, default='quartz')
-    main_image = models.URLField(blank=True)
+    main_image = models.ImageField(upload_to='products/', blank=True)
     features = models.JSONField(default=dict, blank=True)
     is_luxury = models.BooleanField(default=False)
     description = models.TextField(blank=True)
@@ -130,7 +130,7 @@ class Product(BaseModel, SluggedMixinModel):
 
 class ProductImage(BaseModel):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
-    image = models.URLField()
+    image = models.ImageField(upload_to='products/')
 
 
 class ProductColor(BaseModel):

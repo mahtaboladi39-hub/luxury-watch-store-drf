@@ -31,5 +31,7 @@ Configuration is read from environment variables (defaults are fine for local de
 - `GET /api/luxury-special/` — available products marked special and luxury, with the global average price across luxury products annotated in SQL.
 - `GET /api/me/wishlist/` — authenticated user's wishlist with product/customer relationships selected efficiently.
 
+Product images are real file uploads: send `main_image` as `multipart/form-data` when creating a product (or add `ProductImage` rows in Django admin). Files are stored under `MEDIA_ROOT` and served from `/media/` while `DEBUG=True`.
+
 The wishlist endpoint expects a `Customer` profile for the signed-in user. Products can be created through the `POST /api/products/create/` endpoint or Django admin.
 
