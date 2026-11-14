@@ -15,9 +15,24 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'title', 'slug']
 
 
+class BrandNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Brand
+        fields = ['name']
+
+
+class CategoryNameSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='title', read_only=True)
+
+    class Meta:
+        model = Category
+        fields = ['name']
+
+
 class ProductListSerializer(serializers.ModelSerializer):
-    brand = serializers.CharField(source='brand.name', read_only=True)
-    category = serializers.CharField(source='category.title', read_only=True)
+    # طبق صورت تمرین: Brand.name و Category.name به‌صورت تودرتو.
+    brand = BrandNameSerializer(read_only=True)
+    category = CategoryNameSerializer(read_only=True)
     class Meta:
         model = Product
         fields = ['id', 'title', 'slug', 'price', 'brand', 'category', 'is_available', 'stash']

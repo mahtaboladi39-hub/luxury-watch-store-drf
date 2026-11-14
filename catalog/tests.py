@@ -1,8 +1,10 @@
 import json
 
+from django.contrib.auth.models import User
+from django.db import IntegrityError, transaction
 from django.test import TestCase
 
-from catalog.models import Brand, Category, Product
+from catalog.models import Brand, Category, Customer, Product, WishList
 
 
 class ProductAPITests(TestCase):
@@ -32,7 +34,14 @@ class ProductAPITests(TestCase):
         with self.assertNumQueries(1):
             response = self.client.get('/api/products/')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()[0]['brand'], 'Rolex')
+        payload = response.json()[0]
+        # خروجی تودرتو طبق صورت تمرین: Brand.name / Category.name
+        self.assertEqual(payload['brand'], {'name': 'Rolex'})
+        self.assertEqual(payload['category'], {'name': 'Dive Watches'})
+        self.assertEqual(
+            set(payload),
+            {'id', 'title', 'slug', 'price', 'brand', 'category', 'is_available', 'stash'},
+        )
 
     def test_luxury_list_uses_one_query_with_average(self):
         with self.assertNumQueries(1):
@@ -72,3 +81,29 @@ class ProductAPITests(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json()['slug'], 'seiko-prospex')
         self.assertTrue(Product.objects.filter(slug='seiko-prospex').exists())
+
+    def test_wishlist_unique_together(self):
+        user = User.objects.create_user('sara', 'sara@example.com', 'pass1234')
+        customer = Customer.objects.create(user=user, phone_number='09120000000')
+        WishList.objects.create(customer=customer, product=self.product)
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                WishList.objects.create(customer=customer, product=self.product)
+
+    def test_wishlist_requires_login_and_returns_nested_payload(self):
+        anonymous = self.client.get('/api/me/wishlist/')
+        self.assertEqual(anonymous.status_code, 403)
+
+        user = User.objects.create_user('ali', 'ali@example.com', 'pass1234')
+        customer = Customer.objects.create(user=user, phone_number='0912')
+        WishList.objects.create(customer=customer, product=self.product)
+
+        self.client.force_login(user)
+        response = self.client.get('/api/me/wishlist/')
+        self.assertEqual(response.status_code, 200)
+        item = response.json()[0]
+        self.assertEqual(item['product']['slug'], self.product.slug)
+        self.assertEqual(
+            item['customer'],
+            {'username': 'ali', 'email': 'ali@example.com', 'phone_number': '0912'},
+        )

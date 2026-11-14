@@ -150,5 +150,6 @@ class WishList(BaseModel):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='wishlisted_by')
 
     class Meta:
-        constraints = [models.UniqueConstraint(fields=['product', 'customer'], name='unique_customer_product_wishlist')]
+        # طبق صورت تمرین: هر محصول فقط یک‌بار در ویش‌لیست هر مشتری ثبت می‌شود.
+        unique_together = [('product', 'customer')]
         ordering = ['-created_at']
