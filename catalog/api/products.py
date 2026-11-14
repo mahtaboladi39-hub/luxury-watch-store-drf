@@ -29,9 +29,11 @@ class ProductDetailView(RetrieveAPIView):
     )
 
     def get_object(self):
-        # Atomic increment in a single UPDATE; annotate() cannot persist values.
-        updated = Product.objects.filter(slug=self.kwargs['slug']).update(
-            click_count=F('click_count') + 1
+        # annotate() computes the new counter; update() persists it in one atomic UPDATE.
+        updated = (
+            Product.objects.filter(slug=self.kwargs['slug'])
+            .annotate(new_click_count=F('click_count') + 1)
+            .update(click_count=F('new_click_count'))
         )
         if not updated:
             raise Http404
