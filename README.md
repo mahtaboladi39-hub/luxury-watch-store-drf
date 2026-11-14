@@ -13,15 +13,30 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-The project uses SQLite by default. `django-debug-toolbar` is enabled automatically when installed; visit `/__debug__/` locally.
+The project uses **PostgreSQL** by default. Create the database and role once:
 
-Configuration is read from environment variables (defaults are fine for local development):
+```sql
+CREATE ROLE watch_store LOGIN PASSWORD 'watch_store' CREATEDB;
+CREATE DATABASE watch_store OWNER watch_store;
+```
+
+Then copy `.env.example` to `.env` and adjust it if your server is not on `127.0.0.1:5432`
+(SQLite is still available with `DB_ENGINE=django.db.backends.sqlite3`).
+`django-debug-toolbar` is enabled automatically when installed; visit `/__debug__/` locally.
+
+Configuration is read from environment variables (or the optional `.env` file):
 
 | Variable | Default | Purpose |
 |---|---|---|
 | `DJANGO_SECRET_KEY` | insecure dev key | production secret key |
 | `DJANGO_DEBUG` | `1` | set to `0` to disable debug mode |
 | `DJANGO_ALLOWED_HOSTS` | empty | comma-separated hostnames, e.g. `example.com,www.example.com` |
+| `DB_NAME` | `watch_store` | database name |
+| `DB_USER` | `watch_store` | database user |
+| `DB_PASSWORD` | `watch_store` | database password |
+| `DB_HOST` | `127.0.0.1` | database host |
+| `DB_PORT` | `5432` | database port |
+| `DB_ENGINE` | PostgreSQL | set to `django.db.backends.sqlite3` to use SQLite |
 
 ## API
 
